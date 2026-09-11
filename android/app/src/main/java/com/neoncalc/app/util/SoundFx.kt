@@ -28,11 +28,11 @@ object SoundFx {
     }
 
     fun operator() {
-        generator()?.startTone(ToneGenerator.TONE_DTMF_s, 70)
+        generator()?.startTone(ToneGenerator.TONE_DTMF_S, 70)
     }
 
     fun function() {
-        generator()?.startTone(ToneGenerator.TONE_DTMF_d, 70)
+        generator()?.startTone(ToneGenerator.TONE_DTMF_D, 70)
     }
 
     fun equals() {
@@ -48,15 +48,15 @@ object SoundFx {
     }
 
     fun backspace() {
-        generator()?.startTone(ToneGenerator.TONE_DTMF_a, 60)
+        generator()?.startTone(ToneGenerator.TONE_DTMF_A, 60)
     }
 
     fun memory() {
-        generator()?.startTone(ToneGenerator.TONE_DTMF_b, 70)
+        generator()?.startTone(ToneGenerator.TONE_DTMF_B, 70)
     }
 
     fun toggle() {
-        generator()?.startTone(ToneGenerator.TONE_DTMF_c, 80)
+        generator()?.startTone(ToneGenerator.TONE_DTMF_C, 80)
     }
 
     fun release() {

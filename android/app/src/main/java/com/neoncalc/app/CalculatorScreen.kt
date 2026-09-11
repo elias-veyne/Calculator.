@@ -133,7 +133,7 @@ private fun handleKey(label: String, vm: CalculatorViewModel) {
  * Physical keyboard support (Activity-level key handling equivalent)
  * ================================================================ */
 private fun handlePhysicalKey(event: ComposeKeyEvent, vm: CalculatorViewModel): Boolean {
-    if (event.type != KeyEventType.KeyDown) return false
+    if (event.nativeKeyEvent.action != KeyEvent.ACTION_DOWN) return false
     val kc = event.nativeKeyEvent.keyCode
     val label: String = when {
         kc in KeyEvent.KEYCODE_0..KeyEvent.KEYCODE_9 -> (kc - KeyEvent.KEYCODE_0).toString()
