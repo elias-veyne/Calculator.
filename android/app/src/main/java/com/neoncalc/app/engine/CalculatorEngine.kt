@@ -117,7 +117,7 @@ object CalculatorEngine {
             when (ch) {
                 '!' -> {
                     tokens.add(Token(TokenType.OP, "!", 5, rightAssoc = false))
-                    prev = TokenType.OP
+                    prev = TokenType.NUM
                 }
                 'π' -> {
                     tokens.add(Token(TokenType.NUM, PI.toString(), 0, rightAssoc = false))
@@ -136,7 +136,7 @@ object CalculatorEngine {
                     prev = TokenType.RPAREN
                 }
                 else -> {
-                    if ("^×*/%+−-".contains(ch)) {
+                    if ("^×*/÷%+−-".contains(ch)) {
                         val unaryOk = prev == null || prev == TokenType.OP ||
                             prev == TokenType.LPAREN || prev == TokenType.FUNC
                         when {
@@ -151,12 +151,13 @@ object CalculatorEngine {
                                     IllegalArgumentException("Unexpected % — it must follow a number")
                                 )
                                 pushOperator("%")
+                                prev = TokenType.NUM
                             }
                             unaryOk ->
                                 return Result.failure(IllegalArgumentException("Unexpected operator \"$ch\""))
                             else -> pushOperator(ch.toString())
                         }
-                        prev = TokenType.OP
+                        if (ch != '%') prev = TokenType.OP
                     } else {
                         return Result.failure(IllegalArgumentException("Unsupported character \"$ch\""))
                     }
@@ -176,15 +177,6 @@ object CalculatorEngine {
 
         fun topOp(): Token? = stack.lastOrNull()?.takeIf { it.type == TokenType.OP }
         fun isOpToken(t: Token?): Boolean = t != null && t.type == TokenType.OP
-
-        fun previousIsValue(): Boolean {
-            val last = output.lastOrNull() ?: return false
-            return when (last) {
-                is Node.Num -> true
-                is Node.Op -> last.op == OpKind.FACT || last.op == OpKind.PERCENT ||
-                    last.op == OpKind.UNARY_NEG || last.op == OpKind.UNARY_PLUS
-            }
-        }
 
         fun emitOp(tok: Token): String? {
             val op = opFromToken(tok)
@@ -228,17 +220,22 @@ object CalculatorEngine {
             return null
         }
 
+        var lastTokenType: TokenType? = null
         for (tok in tokens) {
             when (tok.type) {
                 TokenType.NUM -> output.addLast(Node.Num(tok.value.toDouble()))
 
                 TokenType.FUNC -> {
-                    if (previousIsValue()) pushImplicitMultiply()
+                    if (lastTokenType == TokenType.NUM || lastTokenType == TokenType.RPAREN) {
+                        pushImplicitMultiply()
+                    }
                     stack.addLast(tok)
                 }
 
                 TokenType.LPAREN -> {
-                    if (previousIsValue()) pushImplicitMultiply()
+                    if (lastTokenType == TokenType.NUM || lastTokenType == TokenType.RPAREN) {
+                        pushImplicitMultiply()
+                    }
                     stack.addLast(tok)
                 }
 
@@ -258,6 +255,12 @@ object CalculatorEngine {
                 }
 
                 TokenType.OP -> {
+                    if (tok.precedence == 3) {
+                        // Unary +/−: bind to the next operand, don't pop pending operators.
+                        stack.addLast(tok)
+                        lastTokenType = tok.type
+                        continue
+                    }
                     while (isOpToken(topOp()) &&
                         (topOp()!!.precedence > tok.precedence ||
                             (topOp()!!.precedence == tok.precedence && !tok.rightAssoc))
@@ -268,6 +271,7 @@ object CalculatorEngine {
                     stack.addLast(tok)
                 }
             }
+            lastTokenType = tok.type
         }
 
         while (stack.isNotEmpty()) {
