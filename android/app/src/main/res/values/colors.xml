@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- NeonCalc — animé dark palette -->
+<resources>
+    <color name="bg_void">#07070B</color>
+    <color name="bg_panel">#0E0E16</color>
+    <color name="neon_cyan">#00F0FF</color>
+    <color name="neon_purple">#B26BFF</color>
+    <color name="neon_pink">#FF4FD8</color>
+    <color name="neon_amber">#FFB347</color>
+</resources>

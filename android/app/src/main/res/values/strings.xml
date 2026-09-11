@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">NeonCalc</string>
+    <string name="mode_basic">BASIC</string>
+    <string name="mode_scientific">SCIENTIFIC</string>
+    <string name="deg">DEG</string>
+    <string name="rad">RAD</string>
+    <string name="history">HISTORY</string>
+    <string name="memory">memory empty</string>
+</resources>

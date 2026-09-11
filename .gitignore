@@ -1,0 +1,18 @@
+# ---- Web (Vite) ----
+node_modules/
+dist/
+*.local
+.DS_Store
+
+# ---- Android ----
+android/.gradle/
+android/app/build/
+android/local.properties
+android/.idea/
+android/.kotlin/
+android/captures/
+*.iml
+.idea/
+
+# ---- Logs ----
+*.log

@@ -1,0 +1,90 @@
+# ============================================================
+# NeonCalc — CI/CD pipeline
+# ------------------------------------------------------------
+# Triggered on:
+#   · push to main / master
+#   · pull requests targeting main / master
+#   · version tags (v*)
+#   · manual dispatch from the Actions tab
+#
+# Jobs:
+#   1. build-apk  — compiles the Android app (android/) into a
+#      debug APK with JDK 17 + Gradle 8.9, runs the JUnit engine
+#      tests, and uploads the APK as a downloadable artifact.
+#   2. build-web  — sanity-builds the web version (Vite).
+# ============================================================
+
+name: Build Android APK
+
+on:
+  push:
+    branches: [main, master]
+    tags:
+      - "v*"
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch: # manual trigger button in the Actions tab
+
+permissions:
+  contents: read
+
+jobs:
+  # ----------------------------------------------------------
+  # Android: unit tests → assembleDebug → upload APK artifact
+  # ----------------------------------------------------------
+  build-apk:
+    name: Compile APK
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: android
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle 8.9
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9" # quoted: YAML would parse 8.9 as a number
+          validate-wrappers: false # no wrapper jar checked in — version is provisioned above
+
+      - name: Run engine unit tests (JUnit)
+        run: gradle :app:testDebugUnitTest --stacktrace
+
+      - name: Build debug APK
+        run: gradle :app:assembleDebug --stacktrace
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NeonCalc-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
+
+  # ----------------------------------------------------------
+  # Web version sanity build (optional — same repo)
+  # ----------------------------------------------------------
+  build-web:
+    name: Build web app
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (Vite)
+        run: npm run build
